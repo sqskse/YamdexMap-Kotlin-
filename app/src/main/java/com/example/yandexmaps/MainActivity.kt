@@ -8,6 +8,8 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.yandexmaps.databinding.ActivityMainBinding
+import com.example.yandexmaps.ui.theme.MapStrings
+import com.example.yandexmaps.ui.theme.MapTheme
 import com.yandex.mapkit.MapKitFactory
 import com.yandex.mapkit.geometry.BoundingBox
 import com.yandex.mapkit.geometry.Point
@@ -26,6 +28,8 @@ import com.yandex.mapkit.search.Session
 import com.yandex.runtime.Error as RuntimeError
 import com.yandex.runtime.image.ImageProvider
 import java.lang.ref.WeakReference
+import java.util.Locale
+import kotlin.math.roundToInt
 
 class MainActivity : AppCompatActivity() {
 
@@ -121,13 +125,13 @@ class MainActivity : AppCompatActivity() {
         binding.searchEdit.text?.clear()
 
         updateInfo()
-        toast(MapConfig.MAP_CLEARED)
+        toast(MapStrings.MapCleared)
     }
 
     private fun performSearch() {
         val query = binding.searchEdit.text?.toString()?.trim().orEmpty()
         if (query.isEmpty()) {
-            toast(MapConfig.ENTER_QUERY)
+            toast(MapStrings.EnterQuery)
             return
         }
 
@@ -150,18 +154,18 @@ class MainActivity : AppCompatActivity() {
                     val point = geoObject?.geometry?.firstOrNull()?.point
 
                     if (point == null) {
-                        toast(MapConfig.SEARCH_NOT_FOUND)
+                        toast(MapStrings.SearchNotFound)
                         return
                     }
 
                     addMarker(point)
                     binding.mapView.mapWindow.map.move(CameraPosition(point, SEARCH_ZOOM, 0f, 0f))
-                    toast(String.format(MapConfig.SEARCH_FOUND, geoObject.name.orEmpty()))
+                    toast(String.format(MapStrings.SearchFoundFormat, geoObject.name.orEmpty()))
                 }
 
                 override fun onSearchError(error: RuntimeError) {
                     binding.searchProgress.visibility = View.GONE
-                    toast(MapConfig.SEARCH_ERROR)
+                    toast(MapStrings.SearchError)
                 }
             }
         )
@@ -170,28 +174,46 @@ class MainActivity : AppCompatActivity() {
     private fun updateInfo() {
         var totalDistance = 0.0
         if (points.size == 2) {
-            totalDistance = DistanceUtils.distanceBetween(points[0], points[1])
+            totalDistance = distanceBetween(points[0], points[1])
         } else if (points.size >= 3) {
             for (i in points.indices) {
                 val nextIndex = if (i == points.size - 1) 0 else i + 1
-                totalDistance += DistanceUtils.distanceBetween(points[i], points[nextIndex])
+                totalDistance += distanceBetween(points[i], points[nextIndex])
             }
         }
 
         binding.distanceValue.text = if (points.size >= 2) {
-            if (points.size == 2) DistanceUtils.formatDistance(totalDistance)
-            else String.format(MapConfig.PERIMETER_FORMAT, DistanceUtils.formatDistance(totalDistance))
+            if (points.size == 2) formatDistance(totalDistance)
+            else String.format(MapStrings.PerimeterFormat, formatDistance(totalDistance))
         } else {
-            MapConfig.DISTANCE_PLACEHOLDER
+            MapStrings.DistancePlaceholder
         }
 
         binding.distanceHint.text = when {
-            points.size >= 3 -> MapConfig.HINT_NEW_TRIANGLE
-            points.size == 2 -> MapConfig.HINT_NEED_THIRD_POINT
-            else -> MapConfig.HINT_EMPTY
+            points.size >= 3 -> MapStrings.HintNewTriangle
+            points.size == 2 -> MapStrings.HintNeedThirdPoint
+            else -> MapStrings.HintEmpty
         }
 
-        binding.markersCount.text = MapConfig.getMarkersCountString(points.size)
+        binding.markersCount.text = MapStrings.getMarkersCountString(points.size)
+    }
+
+    // Математика (перенесена сюда, чтобы не создавать лишних файлов)
+    private fun distanceBetween(a: Point, b: Point): Double {
+        val lat1 = Math.toRadians(a.latitude)
+        val lat2 = Math.toRadians(b.latitude)
+        val dLat = lat2 - lat1
+        val dLon = Math.toRadians(b.longitude - a.longitude)
+        val sinLat = Math.sin(dLat / 2.0)
+        val sinLon = Math.sin(dLon / 2.0)
+        val h = sinLat * sinLat + Math.cos(lat1) * Math.cos(lat2) * sinLon * sinLon
+        return 2.0 * 6371000.0 * Math.asin(Math.sqrt(h.coerceIn(0.0, 1.0)))
+    }
+
+    private fun formatDistance(meters: Double): String = if (meters < 1000) {
+        String.format(Locale.getDefault(), MapStrings.DistanceMetersFormat, meters.roundToInt())
+    } else {
+        String.format(Locale.getDefault(), MapStrings.DistanceKmFormat, meters / 1000.0)
     }
 
     private fun hideKeyboard() {
@@ -209,7 +231,7 @@ class MainActivity : AppCompatActivity() {
     private val markerStyle by lazy {
         IconStyle()
             .setAnchor(PointF(0.5f, 1f))
-            .setScale(MapConfig.MARKER_SCALE)
+            .setScale(MapTheme.MarkerScale)
     }
 
     private companion object {

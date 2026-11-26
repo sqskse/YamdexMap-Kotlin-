@@ -8,6 +8,7 @@ import android.graphics.PointF
 import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Typeface
+import com.example.yandexmaps.ui.theme.*
 import com.yandex.mapkit.geometry.Point
 import com.yandex.mapkit.geometry.Polyline
 import com.yandex.mapkit.map.IconStyle
@@ -16,6 +17,8 @@ import com.yandex.mapkit.map.MapObjectCollection
 import com.yandex.mapkit.map.PlacemarkMapObject
 import com.yandex.mapkit.map.PolylineMapObject
 import com.yandex.runtime.image.ImageProvider
+import java.util.Locale
+import kotlin.math.roundToInt
 
 class MapRenderer(private val context: Context) {
 
@@ -34,7 +37,6 @@ class MapRenderer(private val context: Context) {
 
     fun render(mapObjects: MapObjectCollection, points: List<Point>) {
         clear(mapObjects)
-
         if (points.size < 2) return
 
         val segmentsCount = if (points.size == 2) 1 else points.size
@@ -43,23 +45,19 @@ class MapRenderer(private val context: Context) {
             val start = points[i]
             val end = if (i == points.size - 1) points[0] else points[i + 1]
 
-            // Рисуем линию
             val line = mapObjects.addPolyline(Polyline(listOf(start, end))).apply {
-                setStyle(LineStyle().setStrokeWidth(dpToPx(MapConfig.LINE_WIDTH_DP)))
-                setStrokeColors(listOf(MapConfig.LINE_COLOR))
+                setStyle(LineStyle().setStrokeWidth(dpToPx(MapTheme.LineWidth)))
+                setStrokeColors(listOf(MapLineColor))
             }
             polylines.add(line)
 
-            // Вычисляем центр
             val midLat = (start.latitude + end.latitude) / 2.0
             val midLon = (start.longitude + end.longitude) / 2.0
             val midPoint = Point(midLat, midLon)
 
-            // Текст и расстояние
-            val distanceMeters = DistanceUtils.distanceBetween(start, end)
-            val text = DistanceUtils.formatDistance(distanceMeters)
+            val distanceMeters = distanceBetween(start, end)
+            val text = formatDistance(distanceMeters)
 
-            // Добавляем текст
             val textLabel = mapObjects.addPlacemark().apply {
                 geometry = midPoint
                 setIcon(
@@ -72,13 +70,13 @@ class MapRenderer(private val context: Context) {
     }
 
     private fun createTextBitmap(text: String): Bitmap {
-        val textSize = spToPx(MapConfig.TEXT_SIZE_SP)
-        val padding = dpToPx(MapConfig.TEXT_PADDING_DP)
-        val cornerRadius = dpToPx(MapConfig.TEXT_CORNER_RADIUS_DP)
-        val borderWidth = dpToPx(MapConfig.TEXT_BORDER_WIDTH_DP)
+        val textSize = spToPx(MapTypography.TextSize)
+        val padding = dpToPx(MapTheme.TextPadding)
+        val cornerRadius = dpToPx(MapTheme.TextCornerRadius)
+        val borderWidth = dpToPx(MapTheme.TextBorderWidth)
 
         val paint = Paint().apply {
-            color = MapConfig.TEXT_COLOR
+            color = MapTextColor
             this.textSize = textSize
             isAntiAlias = true
             textAlign = Paint.Align.CENTER
@@ -93,29 +91,43 @@ class MapRenderer(private val context: Context) {
 
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
-
         val rect = RectF(0f, 0f, width.toFloat(), height.toFloat())
 
-        // Фон
         val bgPaint = Paint().apply {
-            color = MapConfig.TEXT_BG_COLOR
+            color = MapTextBgColor
             isAntiAlias = true
         }
         canvas.drawRoundRect(rect, cornerRadius, cornerRadius, bgPaint)
 
-        // Рамка
         val borderPaint = Paint().apply {
-            color = MapConfig.TEXT_BORDER_COLOR
+            color = MapTextBorderColor
             style = Paint.Style.STROKE
             strokeWidth = borderWidth
             isAntiAlias = true
         }
         canvas.drawRoundRect(rect, cornerRadius, cornerRadius, borderPaint)
 
-        // Текст
         val textY = (height / 2f) - ((bounds.top + bounds.bottom) / 2f)
         canvas.drawText(text, width / 2f, textY, paint)
 
         return bitmap
+    }
+
+    // Математика перенесена сюда
+    private fun distanceBetween(a: Point, b: Point): Double {
+        val lat1 = Math.toRadians(a.latitude)
+        val lat2 = Math.toRadians(b.latitude)
+        val dLat = lat2 - lat1
+        val dLon = Math.toRadians(b.longitude - a.longitude)
+        val sinLat = Math.sin(dLat / 2.0)
+        val sinLon = Math.sin(dLon / 2.0)
+        val h = sinLat * sinLat + Math.cos(lat1) * Math.cos(lat2) * sinLon * sinLon
+        return 2.0 * 6371000.0 * Math.asin(Math.sqrt(h.coerceIn(0.0, 1.0)))
+    }
+
+    private fun formatDistance(meters: Double): String = if (meters < 1000) {
+        String.format(Locale.getDefault(), MapStrings.DistanceMetersFormat, meters.roundToInt())
+    } else {
+        String.format(Locale.getDefault(), MapStrings.DistanceKmFormat, meters / 1000.0)
     }
 }
