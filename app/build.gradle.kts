@@ -15,7 +15,7 @@ val localProperties = Properties().apply {
 // out of the box; replace it with your own MapKit key for real projects.
 val mapkitApiKey = localProperties.getProperty("MAPKIT_API_KEY")
     ?.takeIf { it.isNotBlank() }
-    ?: "51bb0562-cabc-4b14-a41a-bedda57d8292"
+    ?: ""
 
 val mapkitVersion = providers.gradleProperty("mapkitVersion")
     .getOrElse("4.45.0-full")
