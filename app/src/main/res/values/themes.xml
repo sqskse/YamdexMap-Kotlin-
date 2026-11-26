@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.YandexMaps" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/brand_blue</item>
+        <item name="colorPrimaryDark">@color/brand_blue_dark</item>
+        <item name="colorAccent">@color/brand_blue</item>
+
+        <item name="android:windowBackground">@color/map_placeholder</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:forceDarkAllowed">false</item>
+        <item name="android:windowActionModeOverlay">true</item>
+    </style>
+</resources>

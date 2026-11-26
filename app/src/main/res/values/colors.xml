@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="brand_blue">#FF2C6BED</color>
+    <color name="brand_blue_dark">#FF1E4FC2</color>
+    <color name="route_red">#FFFF4433</color>
+
+    <color name="ink">#FF171A1F</color>
+    <color name="ink_secondary">#FF6B7280</color>
+    <color name="hint">#FF9AA1AC</color>
+    <color name="surface">#FFFFFFFF</color>
+    <color name="divider">#FFEDEFF3</color>
+    <color name="card_stroke">#14000000</color>
+    <color name="map_placeholder">#FFE8EBF0</color>
+</resources>

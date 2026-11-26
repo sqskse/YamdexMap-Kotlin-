@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Яндекс Карты</string>
+
+    <string name="search_hint">Введите адрес или место</string>
+    <string name="search">Найти</string>
+    <string name="clear_map">Очистить</string>
+
+    <string name="distance_title">Расстояние</string>
+    <string name="distance_placeholder">—</string>
+    <string name="distance_hint">Между последними двумя метками</string>
+    <string name="distance_hint_empty">Поставьте две метки на карте</string>
+    <string name="distance_meters">%1$d м</string>
+    <string name="distance_km">%1$s км</string>
+
+    <string name="tap_hint">Коснитесь карты, чтобы поставить метку</string>
+
+    <string name="enter_query">Введите адрес для поиска</string>
+    <string name="searching">Ищем адрес…</string>
+    <string name="search_not_found">Ничего не найдено. Уточните запрос.</string>
+    <string name="search_error">Не удалось выполнить поиск. Проверьте подключение к интернету.</string>
+    <string name="search_found">Найдено: %1$s</string>
+    <string name="map_cleared">Карта очищена</string>
+
+    <plurals name="markers_count">
+        <item quantity="one">%1$d метка</item>
+        <item quantity="few">%1$d метки</item>
+        <item quantity="many">%1$d меток</item>
+        <item quantity="other">%1$d метки</item>
+    </plurals>
+</resources>
